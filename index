@@ -25,23 +25,23 @@
     box-sizing: border-box;
   }
   textarea { height: 180px; resize: vertical; }
-  .row { display: flex; gap: 10px; margin-top: 10px; }
-  .row input, .row select { flex: 1; }
-  .checkbox-row {
+ .row { display: flex; gap: 10px; margin-top: 10px; }
+ .row input,.row select { flex: 1; }
+ .checkbox-row {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-top: 10px;
     font-size: 14px;
   }
-  .checkbox-row input[type="checkbox"] {
+ .checkbox-row input[type="checkbox"] {
     width: auto;
     margin: 0;
   }
-  .campos-manuais {
+ .campos-manuais {
     display: none;
   }
-  .campos-manuais.ativo {
+ .campos-manuais.ativo {
     display: flex;
   }
   button {
@@ -67,8 +67,8 @@
     margin-top: 15px;
     border: 1px solid #444;
   }
-  .contador { font-size:12px; color:#aaa; margin-top:5px; }
-  .aviso-duplicados {
+ .contador { font-size:12px; color:#aaa; margin-top:5px; }
+ .aviso-duplicados {
     background: #ff9800;
     color: #000;
     padding: 8px;
@@ -84,9 +84,9 @@
 <h2>📋 Gerador de Escala</h2>
 
 <label>Cole os nomes, um por linha:</label>
-<textarea id="nomes" placeholder="joão silva
-MARIA souza
-pedro LIMA"></textarea>
+<textarea id="nomes" placeholder="joão silva - folga
+MARIA souza (chegou)
+pedro LIMA: ausente"></textarea>
 <div class="contador" id="contador">0 nomes</div>
 <div class="aviso-duplicados" id="avisoDup"></div>
 
@@ -122,32 +122,34 @@ window.onload = () => {
   const hoje = new Date();
   document.getElementById('diaSemana').value = diasSemana[hoje.getDay()];
   document.getElementById('data').value = hoje.toLocaleDateString('pt-BR');
-  
+
   document.getElementById('usarAuto').addEventListener('change', (e) => {
-    document.getElementById('camposManuais').classList.toggle('ativo', !e.target.checked);
+    document.getElementById('camposManuais').classList.toggle('ativo',!e.target.checked);
   });
 }
 
-function capitalizarNome(nome) {
-  // Palavras que ficam minúsculas: de, da, do, das, dos
+function limparENomear(nome) {
+  // Remove tudo depois de - ( ) : | /
+  let nomeLimpo = nome.split(/[-(:|/]/)[0].trim();
+
+  // Capitaliza: Primeira Letra Maiúscula, mantém preposições minúsculas
   const preposicoes = ['de', 'da', 'do', 'das', 'dos'];
-  
-  return nome
-    .toLowerCase()
-    .trim()
-    .split(' ')
-    .map(palavra => {
-      if (palavra.length === 0) return '';
+
+  return nomeLimpo
+   .toLowerCase()
+   .split(' ')
+   .filter(p => p.length > 0)
+   .map(palavra => {
       if (preposicoes.includes(palavra)) return palavra;
       return palavra.charAt(0).toUpperCase() + palavra.slice(1);
     })
-    .join(' ');
+   .join(' ');
 }
 
 function getSaudacao() {
   const agora = new Date();
   const totalMinutos = agora.getHours() * 60 + agora.getMinutes();
-  
+
   if (totalMinutos >= 300 && totalMinutos <= 720) return 'Bom dia!';
   if (totalMinutos > 720 && totalMinutos <= 1080) return 'Boa tarde!';
   return 'Boa noite!';
@@ -159,16 +161,16 @@ function gerar() {
   const removerDup = document.getElementById('removerDup').checked;
   const usarAuto = document.getElementById('usarAuto').checked;
 
-  // Processa nomes: remove duplicados e corrige capitalização
+  // Processa nomes: limpa, capitaliza e remove duplicados
   const listaOriginal = texto
-    .split("\n")
-    .map(n => capitalizarNome(n))
-    .filter(n => n.length > 0);
+   .split("\n")
+   .map(n => limparENomear(n))
+   .filter(n => n.length > 0);
 
   const vistos = new Set();
   const duplicados = [];
   const listaSemDup = [];
-  
+
   listaOriginal.forEach(nome => {
     const nomeLower = nome.toLowerCase();
     if (vistos.has(nomeLower)) {
@@ -187,7 +189,7 @@ function gerar() {
     avisoDiv.style.display = 'none';
   }
 
-  const listaFinal = removerDup ? listaSemDup : listaOriginal;
+  const listaFinal = removerDup? listaSemDup : listaOriginal;
   listaFinal.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
   document.getElementById('contador').textContent = `${listaFinal.length} nomes`;
@@ -208,7 +210,7 @@ function gerar() {
     data = document.getElementById('data').value;
   }
 
-  const linhasNomes = listaFinal.map(nome => `${nome} @  `).join("\n\n");
+  const linhasNomes = listaFinal.map(nome => `${nome} @`).join("\n\n");
   const saudacao = getSaudacao();
 
   const resultado = `*${saudacao}*
@@ -216,11 +218,14 @@ function gerar() {
 🔵 _ESCALA ${dia} - ${data} - ${hora}_ 🔵
 
 ${linhasNomes}
-
 🛵 💨
 
-➡️ Precisa falar com a logística ??  
+➡️ Precisa falar com a logística??
+
+*SE CUIDEM NA PISTA!*
+
 Chamar 48 98845-9939 nosso contato oficial
+
 ⚠️ Este contato é único e exclusivamente para lançar escala nos grupo`;
 
   document.getElementById('saida').textContent = resultado;
@@ -232,7 +237,7 @@ function copiar() {
     alert("Gere a escala primeiro!");
     return;
   }
-  
+
   navigator.clipboard.writeText(texto).then(() => {
     alert("✅ Copiado! Já pode colar no WhatsApp");
   }).catch(() => {
