@@ -210,7 +210,11 @@ function gerar() {
     data = document.getElementById('data').value;
   }
 
- const linhasNomes = listaFinal.map(nome => `${nome.replace(/\s*@\s*$/, '')} @`).join("\n\n");
+ const linhasNomes = listaFinal.map(nome => {
+  let nomeLimpo = nome.trim().replace(/@$/, '');
+  return `${nomeLimpo} @`;
+}).join("\n\n");
+  
   const saudacao = getSaudacao();
 
   const resultado = `*${saudacao}*
