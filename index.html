@@ -66,7 +66,7 @@ function limparENomear(nome){
   if (!nome) return '';
 
   // Remove dias da semana em maiúsculo/minúsculo com ou sem ponto
-  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom)\.?\b/gi, '').trim();
+  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|FREE)\.?\b/gi, '').trim();
 
   // Corta tudo depois de -, (, :, |, / e @
   let nomeLimpo = nome.split(/[-(:|/@]/)[0].trim();
