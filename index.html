@@ -63,15 +63,28 @@ window.onload=()=>{
 }
 
 function limparENomear(nome){
+  if (!nome) return '';
+
+  // Remove dias da semana em maiúsculo/minúsculo com ou sem ponto
+  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom)\.?\b/gi, '').trim();
+
   // Corta tudo depois de -, (, :, |, / e @
   let nomeLimpo = nome.split(/[-(:|/@]/)[0].trim();
+
   // Remove @ e espaços no final
   nomeLimpo = nomeLimpo.replace(/@+\s*$/, '');
-  const preposicoes=['de','da','do','das','dos'];
-  return nomeLimpo.toLowerCase().split(' ').filter(p=>p.length>0).map(palavra=>{
-    if(preposicoes.includes(palavra)) return palavra;
-    return palavra.charAt(0).toUpperCase()+palavra.slice(1)
-  }).join(' ');
+
+  const preposicoes = ['de','da','do','das','dos'];
+
+  return nomeLimpo
+   .toLowerCase()
+   .split(' ')
+   .filter(p => p.length > 0)
+   .map(palavra => {
+      if (preposicoes.includes(palavra)) return palavra;
+      return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+    })
+   .join(' ');
 }
 
 function getSaudacao(){
