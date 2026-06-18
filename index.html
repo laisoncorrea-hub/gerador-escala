@@ -105,6 +105,13 @@ window.onload=()=>{
   document.getElementById('usarAuto').addEventListener('change',e=>{
     document.getElementById('camposManuais').classList.toggle('ativo',!e.target.checked)
   })
+
+  // Atualiza versão no formato dia.mes.horaMinuto
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const hora = String(hoje.getHours()).padStart(2, '0');
+  const min = String(hoje.getMinutes()).padStart(2, '0');
+  document.getElementById('versao').textContent = `Versão ${dia}.${mes}.${hora}${min}`;
 }
 
 function limparENomear(nome){
@@ -243,7 +250,7 @@ Se precisar de algo é neste número que deve chamar 👆
   }
 
   if(horaUnica){
-    resultado+=`${linhasNomes(lista)}`;
+    resultado+=`${linhasNomes(lista)}\n\n`;
   }else{
     const grupo18=lista.filter(p=>p.horario==='18:00');
     const grupo19=lista.filter(p=>p.horario==='19:00');
@@ -264,7 +271,7 @@ ${linhasNomes(grupo19)}
     }
   }
 
-resultado+=`🛵 💨
+  resultado+=`🛵 💨
 
 *SE CUIDEM NA PISTA!*
 
@@ -312,7 +319,7 @@ document.getElementById('nomes').addEventListener('input',()=>{
    <footer>
         <p>&copy; 2026.Enjoy :) Todos os direitos reservados.</p>
         <p>LSN</p>
-        <p>Versão 18.06.1042</p>
+        <p id="versao">Versão --.--.----</p>
     </footer>
 </body>
 </html>
