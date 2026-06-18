@@ -21,6 +21,20 @@
   pre{background:#1e1e1e;padding:12px;border-radius:8px;white-space:pre-wrap;margin-top:15px;border:1px solid #444}
 .contador{font-size:12px;color:#aaa;margin-top:5px}
 .aviso-duplicados{background:#ff9800;color:#000;padding:8px;border-radius:6px;margin-top:8px;font-size:13px;display:none}
+.modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;
+  z-index:1000;padding:20px;box-sizing:border-box
+}
+.modal.ativo{display:flex}
+.modal-conteudo{
+  background:#1e1e1e;padding:20px;border-radius:10px;max-width:400px;width:100%;
+  border:1px solid #444
+}
+.modal-conteudo h3{margin-top:0}
+.modal-botoes{display:flex;gap:10px;margin-top:15px}
+.modal-botoes button{margin:0}
+.nome-atual{font-size:18px;font-weight:bold;color:#25d366;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -31,27 +45,58 @@ MARIA souza (chegou)
 pedro LIMA @ QUA"></textarea>
 <div class="contador" id="contador">0 nomes</div>
 <div class="aviso-duplicados" id="avisoDup"></div>
+
 <div class="checkbox-row">
   <input type="checkbox" id="removerDup" checked>
   <label for="removerDup">Remover duplicados automaticamente</label>
 </div>
+
 <div class="checkbox-row">
   <input type="checkbox" id="usarAuto" checked>
   <label for="usarAuto">Usar data e dia da semana atual</label>
 </div>
+
+<div class="checkbox-row">
+  <input type="checkbox" id="escolherHorario">
+  <label for="escolherHorario">Escolher horário 18:00 ou 19:00 por pessoa</label>
+</div>
+
 <div class="row campos-manuais" id="camposManuais">
   <input id="diaSemana" placeholder="Dia da semana">
   <input id="data" placeholder="Data DD/MM/AAAA">
 </div>
+
 <div class="row">
   <input id="horario" placeholder="Horário início escala" value="18:30">
 </div>
+
 <button onclick="gerar()">Gerar Escala</button>
 <button onclick="copiar()" class="secundario">Copiar Resultado</button>
 <button onclick="limpar()" class="secundario" style="background:#444;color:#fff">Limpar Tudo</button>
 <pre id="saida">O resultado vai aparecer aqui...</pre>
+
+<!-- Modal de seleção de horário -->
+<div class="modal" id="modalHorario">
+  <div class="modal-conteudo">
+    <h3>Definir Horário</h3>
+    <div class="nome-atual" id="nomeAtual"></div>
+    <p>Que horas essa pessoa entra?</p>
+    <select id="selectHorario">
+      <option value="18:00">18:00</option>
+      <option value="19:00">19:00</option>
+    </select>
+    <div class="modal-botoes">
+      <button onclick="confirmarHorario()">Confirmar</button>
+      <button class="secundario" onclick="pularNome()">Pular</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const diasSemana=['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA','QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
+let listaParaProcessar=[];
+let listaComHorario=[];
+let indiceAtual=0;
 
 window.onload=()=>{
   const hoje=new Date();
@@ -64,27 +109,19 @@ window.onload=()=>{
 
 function limparENomear(nome){
   if (!nome) return '';
-
-  // Remove dias da semana em maiúsculo/minúsculo com ou sem ponto
   nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|FREE)\.?\b/gi, '').trim();
-
-  // Corta tudo depois de -, (, :, |, / e @
   let nomeLimpo = nome.split(/[-(:|/@]/)[0].trim();
-
-  // Remove @ e espaços no final
   nomeLimpo = nomeLimpo.replace(/@+\s*$/, '');
-
   const preposicoes = ['de','da','do','das','dos'];
-
   return nomeLimpo
-   .toLowerCase()
-   .split(' ')
-   .filter(p => p.length > 0)
-   .map(palavra => {
+ .toLowerCase()
+ .split(' ')
+ .filter(p => p.length > 0)
+ .map(palavra => {
       if (preposicoes.includes(palavra)) return palavra;
       return palavra.charAt(0).toUpperCase() + palavra.slice(1);
     })
-   .join(' ');
+ .join(' ');
 }
 
 function getSaudacao(){
@@ -100,6 +137,12 @@ function gerar(){
   const hora=document.getElementById('horario').value;
   const removerDup=document.getElementById('removerDup').checked;
   const usarAuto=document.getElementById('usarAuto').checked;
+  const escolherHorario=document.getElementById('escolherHorario').checked;
+
+  if(!texto.trim()){
+    alert("Cola pelo menos 1 nome!");
+    return
+  }
 
   const listaOriginal=texto.split("\n").map(n=>limparENomear(n)).filter(n=>n.length>0);
 
@@ -125,15 +168,53 @@ function gerar(){
     avisoDiv.style.display='none'
   }
 
-  const listaFinal=removerDup?listaSemDup:listaOriginal;
-  listaFinal.sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));
-  document.getElementById('contador').textContent=`${listaFinal.length} nomes`;
+  listaParaProcessar=removerDup?listaSemDup:listaOriginal;
+  listaParaProcessar.sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));
+  document.getElementById('contador').textContent=`${listaParaProcessar.length} nomes`;
 
-  if(listaFinal.length===0){
-    alert("Cola pelo menos 1 nome!");
+  if(listaParaProcessar.length===0){
+    alert("Nenhum nome válido encontrado!");
     return
   }
 
+  if(escolherHorario){
+    listaComHorario=[];
+    indiceAtual=0;
+    mostrarProximoNome();
+  }else{
+    const listaFinal=listaParaProcessar.map(nome=>({nome,horario:hora}));
+    montarResultado(listaFinal, hora, usarAuto);
+  }
+}
+
+function mostrarProximoNome(){
+  if(indiceAtual>=listaParaProcessar.length){
+    fecharModal();
+    montarResultado(listaComHorario, null, document.getElementById('usarAuto').checked);
+    return
+  }
+  document.getElementById('nomeAtual').textContent=listaParaProcessar[indiceAtual];
+  document.getElementById('modalHorario').classList.add('ativo');
+}
+
+function fecharModal(){
+  document.getElementById('modalHorario').classList.remove('ativo');
+}
+
+function confirmarHorario(){
+  const horario=document.getElementById('selectHorario').value;
+  listaComHorario.push({nome:listaParaProcessar[indiceAtual],horario});
+  indiceAtual++;
+  mostrarProximoNome();
+}
+
+function pularNome(){
+  listaComHorario.push({nome:listaParaProcessar[indiceAtual],horario:'18:00'});
+  indiceAtual++;
+  mostrarProximoNome();
+}
+
+function montarResultado(lista, horaUnica, usarAuto){
   let dia,data;
   if(usarAuto){
     const hoje=new Date();
@@ -142,31 +223,55 @@ function gerar(){
   }else{
     dia=document.getElementById('diaSemana').value.toUpperCase();
     data=document.getElementById('data').value
+    if(!dia ||!data){
+      alert("Preencha dia e data!");
+      return
+    }
   }
 
-  const linhasNomes=listaFinal.map(nome=>`${nome} @`).join("\n\n");
-  const saudacao=getSaudacao();
+  let resultado=`*${getSaudacao()}*
 
-  const resultado=`*${saudacao}*
+🔵 _ESCALA ${dia} - ${data}`;
 
-🔵 _ESCALA ${dia} - ${data} - ${hora}_ 🔵
+  if(horaUnica){
+    resultado+=` - ${horaUnica}_ 🔵\n\n`;
+  }else{
+    resultado+=`_ 🔵\n\n`;
+  }
 
-${linhasNomes}
+  if(horaUnica){
+    resultado+=`${linhasNomes(lista)}`;
+  }else{
+    const grupo18=lista.filter(p=>p.horario==='18:00');
+    const grupo19=lista.filter(p=>p.horario==='19:00');
 
+    if(grupo18.length>0){
+      resultado+=`🕡 *ENTRAM AS 18*
+${linhasNomes(grupo18)}
+\n`;
+    }
+    if(grupo19.length>0){
+      resultado+=`🕢 *ENTRAM AS 19*
+${linhasNomes(grupo19)}
+\n`;
+    }
+  }
 
-🛵 💨
-
+  resultado+=`🛵 💨
 
 *SE CUIDEM NA PISTA!*
 
 ➡️ Precisa falar com a logística??
 
-
 Chamar 48 98845-9939 nosso contato oficial
 
 ⚠️ Este contato é único e exclusivamente para lançar escala nos grupo`;
 
-  document.getElementById('saida').textContent=resultado
+  document.getElementById('saida').textContent=resultado;
+}
+
+function linhasNomes(lista){
+  return lista.map(p=>`${p.nome} @`).join("\n\n");
 }
 
 function copiar(){
@@ -186,7 +291,10 @@ function limpar(){
   document.getElementById('nomes').value='';
   document.getElementById('saida').textContent='O resultado vai aparecer aqui...';
   document.getElementById('contador').textContent='0 nomes';
-  document.getElementById('avisoDup').style.display='none'
+  document.getElementById('avisoDup').style.display='none';
+  listaParaProcessar=[];
+  listaComHorario=[];
+  fecharModal();
 }
 
 document.getElementById('nomes').addEventListener('input',()=>{
