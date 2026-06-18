@@ -114,14 +114,14 @@ function limparENomear(nome){
   nomeLimpo = nomeLimpo.replace(/@+\s*$/, '');
   const preposicoes = ['de','da','do','das','dos'];
   return nomeLimpo
- .toLowerCase()
- .split(' ')
- .filter(p => p.length > 0)
- .map(palavra => {
+.toLowerCase()
+.split(' ')
+.filter(p => p.length > 0)
+.map(palavra => {
       if (preposicoes.includes(palavra)) return palavra;
       return palavra.charAt(0).toUpperCase() + palavra.slice(1);
     })
- .join(' ');
+.join(' ');
 }
 
 function getSaudacao(){
@@ -130,7 +130,6 @@ function getSaudacao(){
   if(totalMinutos>=300&&totalMinutos<=720)return'Bom dia!';
   if(totalMinutos>720&&totalMinutos<=1080)return'Boa tarde!';
   return'Boa noite!';
-  
 }
 
 function gerar(){
@@ -250,20 +249,22 @@ Se precisar de algo é neste número que deve chamar 👆
     const grupo19=lista.filter(p=>p.horario==='19:00');
 
     if(grupo18.length>0){
-      resultado+=`🕡 *ENTRAM AS 18* \n
-      \n;
+      resultado+=`🕡 *ENTRAM AS 18*
+
 ${linhasNomes(grupo18)}
-\n`;
+
+`;
     }
     if(grupo19.length>0){
-      resultado+=`🕢 *ENTRAM AS 19* \n
-      \n;
+      resultado+=`🕢 *ENTRAM AS 19*
+
 ${linhasNomes(grupo19)}
-\n\n`;
+
+`;
     }
   }
 
-  resultado+= 🛵 💨
+  resultado+=`🛵 💨
 
 *SE CUIDEM NA PISTA!*
 
@@ -311,7 +312,7 @@ document.getElementById('nomes').addEventListener('input',()=>{
    <footer>
         <p>&copy; 2026.Enjoy :) Todos os direitos reservados.</p>
         <p>LSN</p>
-        <p>Versão 18.06.1031</p>
+        <p>Versão 18.06.1042</p>
     </footer>
 </body>
 </html>
