@@ -130,6 +130,7 @@ function getSaudacao(){
   if(totalMinutos>=300&&totalMinutos<=720)return'Bom dia!';
   if(totalMinutos>720&&totalMinutos<=1080)return'Boa tarde!';
   return'Boa noite!';
+  
 }
 
 function gerar(){
@@ -230,6 +231,9 @@ function montarResultado(lista, horaUnica, usarAuto){
   }
 
   let resultado=`*${getSaudacao()}*
+
+Lembrando… Nosso número oficial é 48 988459939
+Se precisar de algo é neste número que deve chamar 👆
 
 🔵 _ESCALA ${dia} - ${data}`;
 
