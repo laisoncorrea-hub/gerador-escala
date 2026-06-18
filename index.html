@@ -58,7 +58,7 @@ pedro LIMA @ QUA"></textarea>
 
 <div class="checkbox-row">
   <input type="checkbox" id="escolherHorario">
-  <label for="escolherHorario">Escolher horário 18:00 ou 19:00 por pessoa</label>
+  <label for="escolherHorario">Escolher horário por pessoa</label>
 </div>
 
 <div class="row campos-manuais" id="camposManuais">
@@ -67,7 +67,7 @@ pedro LIMA @ QUA"></textarea>
 </div>
 
 <div class="row">
-  <input id="horario" placeholder="Horário início escala" value="18:30">
+  <input id="horario" placeholder="Horário padrão" value="18:30">
 </div>
 
 <button onclick="gerar()">Gerar Escala</button>
@@ -82,6 +82,10 @@ pedro LIMA @ QUA"></textarea>
     <div class="nome-atual" id="nomeAtual"></div>
     <p>Que horas essa pessoa entra?</p>
     <select id="selectHorario">
+      <option value="10:15">10:15</option>
+      <option value="11:00">11:00</option>
+      <option value="15:00">15:00</option>
+      <option value="17:00">17:00</option>
       <option value="18:00">18:00</option>
       <option value="19:00">19:00</option>
     </select>
@@ -94,6 +98,14 @@ pedro LIMA @ QUA"></textarea>
 
 <script>
 const diasSemana=['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA','QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
+const emojisHorario={
+  '10:15':'🕥',
+  '11:00':'🕚',
+  '15:00':'🕒',
+  '17:00':'🕔',
+  '18:00':'🕕',
+  '19:00':'🕢'
+};
 let listaParaProcessar=[];
 let listaComHorario=[];
 let indiceAtual=0;
@@ -106,7 +118,6 @@ window.onload=()=>{
     document.getElementById('camposManuais').classList.toggle('ativo',!e.target.checked)
   })
 
-  // Atualiza versão no formato dia.mes.horaMinuto
   const dia = String(hoje.getDate()).padStart(2, '0');
   const mes = String(hoje.getMonth() + 1).padStart(2, '0');
   const hora = String(hoje.getHours()).padStart(2, '0');
@@ -252,23 +263,22 @@ Se precisar de algo é neste número que deve chamar 👆
   if(horaUnica){
     resultado+=`${linhasNomes(lista)}\n\n`;
   }else{
-    const grupo18=lista.filter(p=>p.horario==='18:00');
-    const grupo19=lista.filter(p=>p.horario==='19:00');
+    const grupos={};
+    lista.forEach(p=>{
+      if(!grupos[p.horario]) grupos[p.horario]=[];
+      grupos[p.horario].push(p);
+    });
 
-    if(grupo18.length>0){
-      resultado+=`🕡 *ENTRAM AS 18*
+    const horariosOrdenados=Object.keys(grupos).sort();
 
-${linhasNomes(grupo18)}
+    horariosOrdenados.forEach(horario=>{
+      const emoji=emojisHorario[horario]||'🕐';
+      resultado+=`${emoji} *ENTRAM AS ${horario}*
+
+${linhasNomes(grupos[horario])}
 
 `;
-    }
-    if(grupo19.length>0){
-      resultado+=`🕢 *ENTRAM AS 19*
-
-${linhasNomes(grupo19)}
-
-`;
-    }
+    });
   }
 
   resultado+=`🛵 💨
