@@ -151,8 +151,8 @@ function limparENomear(nome){
 
   nome = nome.trim();
 
-  // Remove aspas duplas e simples
-  nome = nome.replace(/["']/g, '');
+  // Remove aspas duplas, simples, curvas e crases
+  nome = nome.replace(/["'“”‘’`]/g, '');
 
   // Remove tags de folga/dia no final ou meio
   nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|free|sem folga)\b\.?/gi, '').trim();
@@ -167,11 +167,11 @@ function limparENomear(nome){
 
   const preposicoes = ['de','da','do','das','dos'];
   return nome
-.toLowerCase()
-.split(/\s+/)
-.filter(p => p.length > 0)
-.map(palavra => preposicoes.includes(palavra)? palavra : palavra.charAt(0).toUpperCase() + palavra.slice(1))
-.join(' ');
+  .toLowerCase()
+  .split(/\s+/)
+  .filter(p => p.length > 0)
+  .map(palavra => preposicoes.includes(palavra)? palavra : palavra.charAt(0).toUpperCase() + palavra.slice(1))
+  .join(' ');
 }
 
 function getSaudacao(){
