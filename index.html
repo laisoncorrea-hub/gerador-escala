@@ -35,13 +35,19 @@
 .modal-botoes{display:flex;gap:10px;margin-top:15px}
 .modal-botoes button{margin:0}
 .nome-atual{font-size:18px;font-weight:bold;color:#25d366;margin-bottom:10px}
+.cabecalho-tempo{
+  background:#1e1e1e;border:1px solid #25d366;border-radius:8px;padding:10px;
+  text-align:center;font-size:14px;margin-bottom:15px;color:#25d366;font-weight:bold
+}
 </style>
 </head>
 <body>
 <h2>📋 Gerador de Escala</h2>
+<div class="cabecalho-tempo" id="cabecalhoTempo">Carregando...</div>
+
 <label>Cole os nomes, um por linha:</label>
-<textarea id="nomes" placeholder="joão silva - folga
-MARIA souza (chegou)
+<textarea id="nomes" placeholder='"joão silva" - seg
+'MARIA souza' (chegou)
 pedro LIMA @ QUA"></textarea>
 <div class="contador" id="contador">0 nomes</div>
 <div class="aviso-duplicados" id="avisoDup"></div>
@@ -83,6 +89,8 @@ pedro LIMA @ QUA"></textarea>
     <p>Que horas essa pessoa entra?</p>
     <select id="selectHorario">
       <option value="10:15">10:15</option>
+      <option value="10:30">10:30</option>
+      <option value="10:45">10:45</option>
       <option value="11:00">11:00</option>
       <option value="15:00">15:00</option>
       <option value="17:00">17:00</option>
@@ -100,6 +108,8 @@ pedro LIMA @ QUA"></textarea>
 const diasSemana=['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA','QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
 const emojisHorario={
   '10:15':'🕥',
+  '10:30':'🕥',
+  '10:45':'🕦',
   '11:00':'🕚',
   '15:00':'🕒',
   '17:00':'🕔',
@@ -109,6 +119,14 @@ const emojisHorario={
 let listaParaProcessar=[];
 let listaComHorario=[];
 let indiceAtual=0;
+
+function atualizarRelogio(){
+  const agora = new Date();
+  const dia = diasSemana[agora.getDay()];
+  const data = agora.toLocaleDateString('pt-BR');
+  const hora = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('cabecalhoTempo').textContent = `🕒 ${dia} - ${data} - ${hora}`;
+}
 
 window.onload=()=>{
   const hoje=new Date();
@@ -123,22 +141,36 @@ window.onload=()=>{
   const hora = String(hoje.getHours()).padStart(2, '0');
   const min = String(hoje.getMinutes()).padStart(2, '0');
   document.getElementById('versao').textContent = `Versão ${dia}.${mes}.${hora}${min}`;
+
+  atualizarRelogio();
+  setInterval(atualizarRelogio,1000);
 }
 
 function limparENomear(nome){
   if (!nome) return '';
-  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|FREE|SEM FOLGA|")\.?\b/gi, '').trim();
-  let nomeLimpo = nome.split(/[-(:|/@]/)[0].trim();
-  nomeLimpo = nomeLimpo.replace(/@+\s*$/, '');
+
+  nome = nome.trim();
+
+  // Remove aspas duplas e simples
+  nome = nome.replace(/["']/g, '');
+
+  // Remove tags de folga/dia no final ou meio
+  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|free|sem folga)\b\.?/gi, '').trim();
+
+  // Pega só a parte antes de - ( : | / @
+  nome = nome.split(/[-:/(|/@]/)[0].trim();
+
+  // Remove @ solto no final
+  nome = nome.replace(/@+$/,'').trim();
+
+  if(!nome) return ''; // Evita retornar string vazia
+
   const preposicoes = ['de','da','do','das','dos'];
-  return nomeLimpo
+  return nome
 .toLowerCase()
-.split(' ')
+.split(/\s+/)
 .filter(p => p.length > 0)
-.map(palavra => {
-      if (preposicoes.includes(palavra)) return palavra;
-      return palavra.charAt(0).toUpperCase() + palavra.slice(1);
-    })
+.map(palavra => preposicoes.includes(palavra)? palavra : palavra.charAt(0).toUpperCase() + palavra.slice(1))
 .join(' ');
 }
 
