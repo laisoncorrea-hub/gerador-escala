@@ -127,7 +127,7 @@ window.onload=()=>{
 
 function limparENomear(nome){
   if (!nome) return '';
-  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|FREE)\.?\b/gi, '').trim();
+  nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|FREE|SEM FOLGA|")\.?\b/gi, '').trim();
   let nomeLimpo = nome.split(/[-(:|/@]/)[0].trim();
   nomeLimpo = nomeLimpo.replace(/@+\s*$/, '');
   const preposicoes = ['de','da','do','das','dos'];
