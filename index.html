@@ -149,21 +149,21 @@ window.onload=()=>{
 function limparENomear(nome){
   if (!nome) return '';
 
+  // 1. Tira TUDO que não é letra/espaço, exceto acentos
+  nome = nome.replace(/["'“”‘’`\[\](){}]/g, '');
+
   nome = nome.trim();
 
-  // Remove aspas duplas, simples, curvas e crases
-  nome = nome.replace(/["'“”‘’`]/g, '');
-
-  // Remove tags de folga/dia no final ou meio
+  // 2. Remove tags de folga/dia no final ou meio
   nome = nome.replace(/\b(seg|ter|qua|qui|sex|sab|dom|semanal|free|sem folga)\b\.?/gi, '').trim();
 
-  // Pega só a parte antes de - ( : | / @
+  // 3. Pega só a parte antes de - ( : | / @
   nome = nome.split(/[-:/(|/@]/)[0].trim();
 
-  // Remove @ solto no final
+  // 4. Remove @ solto no final
   nome = nome.replace(/@+$/,'').trim();
 
-  if(!nome) return ''; // Evita retornar string vazia
+  if(!nome) return ''; 
 
   const preposicoes = ['de','da','do','das','dos'];
   return nome
